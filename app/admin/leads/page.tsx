@@ -61,7 +61,7 @@ export default async function LeadsPage() {
                   </td>
                 </tr>
               )}
-              {leads.map((lead) => (
+              {leads.map((lead: any) => (
                 <tr key={lead.id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 font-medium text-gray-800">
                      <Link href={`/admin/leads/${lead.id}`} className="hover:text-blue-700 hover:underline">
