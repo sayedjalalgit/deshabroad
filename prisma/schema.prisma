@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum ServiceType {
+  STUDY_ABROAD
+  IMMIGRATION
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  IN_PROGRESS
+  SUBMITTED
+  COMPLETED
+  DROPPED
+}
+
+enum ApplicationStage {
+  DOCUMENTS_COLLECTION
+  APPLICATION_SUBMITTED
+  OFFER_RECEIVED
+  VISA_APPLIED
+  VISA_APPROVED
+  VISA_REJECTED
+  ENROLLED
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ConsultationMode {
+  IN_PERSON
+  PHONE
+  VIDEO
+}
+
+enum ConsultationStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id            String      @id @default(uuid())
+  name          String
+  email         String      @unique
+  password      String
+  role          Role        @default(STAFF)
+  createdAt     DateTime    @default(now())
+
+  leads         Lead[]
+  blogPosts     BlogPost[]
+
+  @@map("users")
+}
+
+model Lead {
+  id              String      @id @default(uuid())
+  fullName        String
+  email           String
+  phone           String
+  serviceType     ServiceType
+  countryInterest String?
+  status          LeadStatus  @default(NEW)
+  notes           String?
+  assignedTo      User?       @relation(fields: [userId], references: [id])
+  userId          String?
+  createdAt       DateTime    @default(now())
+
+  applications    Application[]
+  consultations   Consultation[]
+
+  @@map("leads")
+}
+
+model Application {
+  id                String           @id @default(uuid())
+  lead              Lead             @relation(fields: [leadId], references: [id])
+  leadId            String
+  stage             ApplicationStage @default(DOCUMENTS_COLLECTION)
+  destinationCountry String
+  university        String?
+  program           String?
+  visaType          String?
+  submissionDate    DateTime?
+  decisionDate      DateTime?
+  updatedAt         DateTime         @updatedAt
+
+  documents         Document[]
+
+  @@map("applications")
+}
+
+model Document {
+  id            String          @id @default(uuid())
+  application   Application     @relation(fields: [applicationId], references: [id])
+  applicationId String
+  docType       String
+  fileUrl       String
+  status        DocumentStatus  @default(PENDING)
+  uploadedAt    DateTime        @default(now())
+
+  @@map("documents")
+}
+
+model Consultation {
+  id          String              @id @default(uuid())
+  lead        Lead                @relation(fields: [leadId], references: [id])
+  leadId      String
+  scheduledAt DateTime
+  mode        ConsultationMode    @default(IN_PERSON)
+  status      ConsultationStatus  @default(SCHEDULED)
+  notes       String?
+
+  @@map("consultations")
+}
+
+model Country {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  flagCode    String
+  serviceType ServiceType
+  active      Boolean  @default(true)
+
+  @@map("countries")
+}
+
+model BlogPost {
+  id          String    @id @default(uuid())
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    String
+  title       String
+  slug        String    @unique
+  content     String
+  status      String    @default("draft")
+  publishedAt DateTime?
+
+  @@map("blog_posts")
+}
