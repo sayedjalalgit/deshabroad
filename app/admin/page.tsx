@@ -89,7 +89,7 @@ export default async function AdminDashboard() {
               {recentLeads.length === 0 && (
                 <p className="text-sm text-gray-400">No leads yet.</p>
               )}
-              {recentLeads.map((lead) => (
+              {recentLeads.map((lead: any) => (
                 <Link
                   key={lead.id}
                   href={`/admin/leads/${lead.id}`}
